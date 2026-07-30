@@ -24,4 +24,6 @@ resource "google_storage_bucket" "demo_bucket" {
     environment = "dev"
     managed_by  = "terraform"
   }
+
+  invalid_argument = "fail"
 }

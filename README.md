@@ -38,6 +38,17 @@ GitHub Actions authenticates to GCP through Workload Identity Federation (WIF). 
 5. Add the GitHub repository or environment principal set to the service account binding.
 6. Add the provider and service account values as GitHub Actions variables.
 
+## Protecting the main branch (block merge on failed checks)
+
+To ensure a failing PR workflow blocks merging to `main`, enable branch protection and require the `Terraform PR Checks` status check:
+
+1. Go to your GitHub repository -> Settings -> Branches -> Branch protection rules.
+2. Add or edit a rule for the `main` branch.
+3. Enable "Require status checks to pass before merging" and select the check named `Terraform PR Checks`.
+4. Optionally enable "Require approvals" for additional safety.
+
+Once configured, any failed run of the `Terraform PR Checks` workflow will prevent merging until the issues are fixed and the check passes.
+
 ## Local usage
 
 ```bash
