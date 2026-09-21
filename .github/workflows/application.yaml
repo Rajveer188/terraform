@@ -1,4 +1,4 @@
-name: Test Variable Resolution
+name: Test Dynamic Variable Resolution
 
 on:
   workflow_dispatch:
@@ -12,9 +12,10 @@ jobs:
       name: Dev
 
     env:
-      # Example GitHub Environment Variables
       APP_TAGS_USERNAME: ${{ vars.APP_TAGS_USERNAME }}
       APP_TAGS_URL: ${{ vars.APP_TAGS_URL }}
+      TEST_VARIABLE1: ${{ vars.TEST_VARIABLE1 }}
+      TEST_VARIABLE2: ${{ vars.TEST_VARIABLE2 }}
 
     steps:
 
@@ -24,22 +25,22 @@ jobs:
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
 
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Read Variables From YAML
+      - name: Read Config
         run: |
 
           CONFIG_FILE=configs/dev/application-tags.yaml
 
-          echo "=== YAML Content ==="
-          cat "$CONFIG_FILE"
+          echo "===== CONFIG ====="
+          cat $CONFIG_FILE
 
           echo ""
-          echo "=== Variables Found ==="
+          echo "===== VARIABLE KEYS ====="
 
-          yq '.github_vars[]' "$CONFIG_FILE" > github_vars.txt
+          yq '.github_vars | keys | .[]' $CONFIG_FILE > github_vars.txt
 
           cat github_vars.txt
 
@@ -47,12 +48,11 @@ jobs:
         run: |
 
           echo ""
-          echo "=== Resolved Values ==="
+          echo "===== RESOLVED VALUES ====="
 
           while read VAR_NAME
           do
 
-            # remove quotes if any
             VAR_NAME=$(echo "$VAR_NAME" | tr -d '"')
 
             VALUE=$(printenv "$VAR_NAME")
@@ -60,3 +60,36 @@ jobs:
             echo "$VAR_NAME=$VALUE"
 
           done < github_vars.txt
+
+      - name: Build Cloud Run Env String
+        run: |
+
+          ENV_VARS=""
+
+          while read VAR_NAME
+          do
+
+            VAR_NAME=$(echo "$VAR_NAME" | tr -d '"')
+
+            VALUE=$(printenv "$VAR_NAME")
+
+            if [ -z "$ENV_VARS" ]; then
+              ENV_VARS="${VAR_NAME}=${VALUE}"
+            else
+              ENV_VARS="${ENV_VARS},${VAR_NAME}=${VALUE}"
+            fi
+
+          done < github_vars.txt
+
+          echo ""
+          echo "===== GENERATED ENV STRING ====="
+          echo "$ENV_VARS"
+
+          echo "ENV_VARS=$ENV_VARS" >> $GITHUB_ENV
+
+      - name: Example Deploy Command
+        run: |
+
+          echo "gcloud run deploy application-tags \\"
+          echo "  --set-env-vars=\"$ENV_VARS\""
+`
