@@ -12,7 +12,9 @@ jobs:
       name: Dev
 
     env:
+      # Example GitHub Environment Variables
       APP_TAGS_USERNAME: ${{ vars.APP_TAGS_USERNAME }}
+      APP_TAGS_URL: ${{ vars.APP_TAGS_URL }}
 
     steps:
 
@@ -22,28 +24,39 @@ jobs:
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq \
-          https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+            https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Read Variable Name From YAML
+      - name: Read Variables From YAML
         run: |
 
-          USERNAME_VAR=$(yq '.github_vars.USERNAME' \
-            configs/dev/application-tags.yaml)
+          CONFIG_FILE=configs/dev/application-tags.yaml
 
-          echo "USERNAME_VAR=$USERNAME_VAR" >> $GITHUB_ENV
+          echo "=== YAML Content ==="
+          cat "$CONFIG_FILE"
 
-      - name: Resolve Actual Value
+          echo ""
+          echo "=== Variables Found ==="
+
+          yq '.github_vars[]' "$CONFIG_FILE" > github_vars.txt
+
+          cat github_vars.txt
+
+      - name: Resolve Values
         run: |
 
-          USERNAME_VALUE=$(printenv "$USERNAME_VAR")
+          echo ""
+          echo "=== Resolved Values ==="
 
-          echo "Resolved Value: $USERNAME_VALUE"
+          while read VAR_NAME
+          do
 
-          echo "USERNAME_VALUE=$USERNAME_VALUE" >> $GITHUB_ENV
+            # remove quotes if any
+            VAR_NAME=$(echo "$VAR_NAME" | tr -d '"')
 
-      - name: Verify
-        run: |
+            VALUE=$(printenv "$VAR_NAME")
 
-          echo "Variable Name  : $USERNAME_VAR"
-          echo "Variable Value : $USERNAME_VALUE"
+            echo "$VAR_NAME=$VALUE"
+
+          done < github_vars.txt
