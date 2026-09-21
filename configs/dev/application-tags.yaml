@@ -3,3 +3,5 @@ service_name: application-tags
 github_vars:
   - APP_TAGS_USERNAME
   - APP_TAGS_URL
+  - TEST_VARIABLE1
+  - TEST_VARIABLE2
