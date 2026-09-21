@@ -4,8 +4,8 @@ github_vars:
   APP_TAGS_USERNAME: APP_TAGS_USERNAME
   APP_TAGS_URL: APP_TAGS_URL
   TEST_VARIABLE1: TEST_VARIABLE1
-  TEST_VARIABLE3:
-  KEY:
+  TEST_VARIABLE3: true
+  KEY: true
 
 secrets:
   app-tags-password: password
