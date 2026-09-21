@@ -1,8 +1,8 @@
 service_name: application-tags
 
 github_vars:
-  USERNAME_VAR: APP_TAGS_USERNAME
-  URL_VAR: APP_TAGS_URL
+  APP_TAGS_USERNAME
+  APP_TAGS_URL
 
 secrets:
-  PASSWORD: app-tags-password
+  app-tags-password
